@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package simonsays;
+
+option go_package = "symonsayspb";
+
+/*
+    The Simon Says service.
+    Allows you to actually play the game.
+*/
+service SimonSays {
+    /*
+    Game process is the following:
+
+    A Join Request should be sent to the game. This tells it
+    to join a game (or start a new one if one isn't already waiting on a game).
+
+    The Response stream will send through a BEGIN Response.State to let you know that
+    the Game has been started.
+
+    When the player receives a START_TURN response, the server can take your input for the turn.
+
+    When the player receives a STOP_TURN response, the serer is no longer taking input for the turn.
+
+    A WIN state says you won the game. A LOSE state means that you got an input wrong, and have lost.
+
+    To send input, send a Request with an event type of Color.
+
+    When you receive a Response of type Color, then light up that colour.
+    */
+    rpc Game(stream Request) returns (stream Response) {}
+}
+
+message Request {
+    //A Player of the Simon says game.
+    message Player {
+        string id = 1;
+    }
+
+    oneof event {
+        Player join = 1;
+        Color press = 2;
+    }
+}
+
+message Response {
+    enum State {
+        UNSPECIFIED = 0;
+        BEGIN = 1;
+        START_TURN = 2;
+        STOP_TURN = 3;
+        WIN = 4;
+        LOSE = 5;
+    }
+    oneof event {
+        State turn = 1;
+        Color light_up = 2;
+    }
+}
+
+enum Color {
+    UNSPECIFIED = 0;
+    RED  = 1;
+    GREEN = 2;
+    YELLOW = 3;
+    BLUE = 4;
+}
+
